@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/energy_calculator.dart';
+import '../providers/energy_provider.dart';
+import '../core/constants.dart';
 
 class EquityModesScreen extends StatefulWidget {
   const EquityModesScreen({super.key});
@@ -20,6 +22,17 @@ class _EquityModesScreenState extends State<EquityModesScreen> {
   final List<double> _demoUse = [1.8, 2.6, 1.2, 2.1];
 
   String _hours(double value) => value.isFinite ? '${value.toStringAsFixed(1)} h' : 'Not limited by load';
+
+  @override
+  void initState() {
+    super.initState();
+    final p = context.read<EnergyProvider>();
+    _batteryWh = p.batteryCapacityWh;
+    _batteryPct = p.batteryPercent;
+    _loadW = p.currentLoadW.clamp(50.0, 5000.0).toDouble();
+    _reservePct = p.reservePercent.clamp(0.0, 50.0).toDouble();
+    _efficiency = AppConfig.systemEfficiency;
+  }
 
   @override
   Widget build(BuildContext context) {
