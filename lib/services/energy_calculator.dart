@@ -13,7 +13,8 @@ class EnergyCalculator {
     double reservePercent = 0,
     double efficiency = 1,
   }) {
-    if (batteryCapacityWh <= 0 || batteryPercent <= reservePercent || currentLoadW <= 0 || efficiency <= 0) return 0;
+    if (batteryCapacityWh <= 0 || batteryPercent <= reservePercent || efficiency <= 0) return 0;
+    if (currentLoadW <= 0) return double.infinity;
     final usableWh = batteryCapacityWh * ((batteryPercent - reservePercent) / 100) * efficiency;
     return usableWh / currentLoadW;
   }
@@ -27,7 +28,7 @@ class EnergyCalculator {
     double efficiency = 0.85,
   }) {
     if (flexibleLoadReductionW < 0 || currentLoadW < 0) throw ArgumentError('Loads cannot be negative.');
-    final reducedLoad = (currentLoadW - flexibleLoadReductionW).clamp(0.0, currentLoadW);
+    final reducedLoad = (currentLoadW - flexibleLoadReductionW).clamp(0.0, currentLoadW).toDouble();
     final before = estimateRuntimeHours(batteryPercent: batteryPercent, batteryCapacityWh: batteryCapacityWh, currentLoadW: currentLoadW, reservePercent: reservePercent, efficiency: efficiency);
     final after = estimateRuntimeHours(batteryPercent: batteryPercent, batteryCapacityWh: batteryCapacityWh, currentLoadW: reducedLoad, reservePercent: reservePercent, efficiency: efficiency);
     final extension = after.isFinite ? (after - before).clamp(0.0, double.infinity) : 0.0;
