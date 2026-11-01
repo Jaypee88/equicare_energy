@@ -42,6 +42,10 @@ EquiCare Energy is a Flutter-based energy monitoring and resilience prototype fo
 
 The app requests hourly shortwave radiation from Open-Meteo. The site coordinates are stored locally. A successful forecast is cached on-device and retained when a later refresh fails.
 
+## Backend API
+
+A FastAPI backend scaffold is in `backend/` with JWT login, password hashing, site and room ownership, meter readings, allocation calculation, autonomy estimates, audit events, SQLite development storage, and PostgreSQL-compatible SQLAlchemy configuration. See `backend/README.md` for Windows setup and tests. The Flutter app currently continues to use local storage; API authentication and cloud synchronisation are not yet wired into its screens.
+
 ## Development status
 
 This repository is an evolving prototype. It does not yet include the complete production backend, multi-user authentication, persistent server-side sites/rooms/residents, real meter provisioning, production-grade role permissions, or a validated external ML training pipeline. Do not represent those capabilities as complete.
