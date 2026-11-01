@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/energy_calculator.dart';
 import '../providers/energy_provider.dart';
 import '../core/constants.dart';
