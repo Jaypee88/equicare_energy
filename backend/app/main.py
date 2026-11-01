@@ -35,7 +35,7 @@ def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     email = payload.email.lower()
     if db.scalar(select(models.User).where(models.User.email == email)):
         raise HTTPException(409, "Email already registered")
-    user = models.User(email=email, password_hash=hash_password(payload.password), role="admin")
+    # First account bootstraps the local deployment; subsequent registrations are least-privilege residents.\n    first_user = db.scalar(select(models.User.id).limit(1)) is None\n    user = models.User(email=email, password_hash=hash_password(payload.password), role="admin" if first_user else "resident")
     db.add(user); db.commit(); db.refresh(user)
     return user
 
