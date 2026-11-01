@@ -15,6 +15,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _capCtrl;
   late TextEditingController _urlCtrl;
+  late TextEditingController _latCtrl;
+  late TextEditingController _lonCtrl;
+  late TextEditingController _reserveCtrl;
 
   @override
   void initState() {
@@ -22,6 +25,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final p = context.read<EnergyProvider>();
     _capCtrl = TextEditingController(text: p.batteryCapacityWh.toString());
     _urlCtrl = TextEditingController(text: p.esp32BaseUrl);
+    _latCtrl = TextEditingController(text: p.siteLatitude.toString());
+    _lonCtrl = TextEditingController(text: p.siteLongitude.toString());
+    _reserveCtrl = TextEditingController(text: p.reservePercent.toString());
+  }
+
+  @override
+  void dispose() {
+    _capCtrl.dispose(); _urlCtrl.dispose(); _latCtrl.dispose(); _lonCtrl.dispose(); _reserveCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -136,13 +148,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
+          const SizedBox(height: 24),
+          const Text('Protected battery reserve (%)', style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          TextField(controller: _reserveCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(border: OutlineInputBorder(), suffixText: '%', helperText: 'Runtime calculations will preserve this reserve.')),
+          const SizedBox(height: 8),
+          OutlinedButton(onPressed: () async {
+            final v = double.tryParse(_reserveCtrl.text);
+            if (v != null && v >= 0 && v < 100) { await p.setReservePercent(v); }
+            else if (mounted) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter a reserve from 0 to below 100%.'))); }
+          }, child: const Text('Save reserve')),
+          const SizedBox(height: 24),
+          const Text('Site location for solar forecast', style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          TextField(controller: _latCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+            decoration: const InputDecoration(labelText: 'Latitude', border: OutlineInputBorder())),
+          const SizedBox(height: 8),
+          TextField(controller: _lonCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+            decoration: const InputDecoration(labelText: 'Longitude', border: OutlineInputBorder())),
+          const SizedBox(height: 8),
+          FilledButton(onPressed: () async {
+            final lat = double.tryParse(_latCtrl.text), lon = double.tryParse(_lonCtrl.text);
+            if (lat == null || lon == null || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter a valid latitude (-90 to 90) and longitude (-180 to 180).')));
+              return;
+            }
+            await p.setSiteLocation(latitude: lat, longitude: lon);
+          }, child: const Text('Save location & refresh forecast')),
+
           // ---- Forecast ----
           const Text('Forecast', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             icon: const Icon(Icons.refresh),
             label: const Text('Refresh solar forecast'),
-            onPressed: () => p.refreshForecast(lat: 6.5244, lon: 3.3792),
+            onPressed: () => p.refreshForecast(lat: p.siteLatitude, lon: p.siteLongitude),
           ),
           const SizedBox(height: 8),
           Text(
