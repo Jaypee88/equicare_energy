@@ -24,7 +24,7 @@ tasks.register<Delete>("clean") {
 }
 
 subprojects {
-    // Keep Android library modules (including tflite_flutter) on the same JVM target.
+    // Keep Android library modules (including tflite_flutter) on a consistent JVM target.
     tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
         sourceCompatibility = JavaVersion.VERSION_17.toString()
         targetCompatibility = JavaVersion.VERSION_17.toString()
@@ -36,8 +36,8 @@ subprojects {
     }
 }
 
-// tflite_flutter sets Java 11 in its Android compileOptions. Override the
-// JavaCompile tasks once that subproject has completed evaluation.
+// tflite_flutter explicitly targets Java 11. Its Kotlin compilation must
+// target the same JVM level; the rest of the app remains on JVM 17.
 gradle.addProjectEvaluationListener(object : org.gradle.api.ProjectEvaluationListener {
     override fun beforeEvaluate(project: org.gradle.api.Project) = Unit
 
@@ -46,9 +46,10 @@ gradle.addProjectEvaluationListener(object : org.gradle.api.ProjectEvaluationLis
         state: org.gradle.api.ProjectState
     ) {
         if (project.name == "tflite_flutter") {
-            project.tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().forEach { task ->
-                task.sourceCompatibility = JavaVersion.VERSION_17.toString()
-                task.targetCompatibility = JavaVersion.VERSION_17.toString()
+            project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().forEach { task ->
+                task.compilerOptions.jvmTarget.set(
+                    org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+                )
             }
         }
     }
