@@ -19,7 +19,7 @@ class _SharedEnergyScreenState extends State<SharedEnergyScreen> {
  @override void initState(){super.initState();_load();}
  @override void dispose(){_siteName.dispose();_budget.dispose();_roomName.dispose();super.dispose();}
  Future<void> _load() async {final s=await _service.sites();if(!mounted)return;setState(()=>_sites=s);if(s.isNotEmpty)await _select(s.first);}
- Future<void> _select(EnergySite site) async {final rooms=await _service.rooms(site.id);if(!mounted)return;setState(()=>_selected=site..toString(),_rooms=rooms,_policy=site.allocationPolicy);}
+ Future<void> _select(EnergySite site) async {final rooms=await _service.rooms(site.id);if(!mounted)return;setState(() { _selected=site; _rooms=rooms; _policy=site.allocationPolicy; });}
  String _id()=>DateTime.now().microsecondsSinceEpoch.toString();
  Future<void> _createSite() async {
   final budget=double.tryParse(_budget.text);
@@ -36,7 +36,7 @@ class _SharedEnergyScreenState extends State<SharedEnergyScreen> {
  }
  @override Widget build(BuildContext context){
   final site=_selected;
-  final allocations=site==null? <RoomAllocation>[]:_service.allocate(site.copyWithPolicy(_policy),_rooms);
+  final allocations=site==null || _policy==AllocationPolicy.manual ? <RoomAllocation>[] : _service.allocate(site.copyWithPolicy(_policy),_rooms);
   final byId={for(final a in allocations)a.roomId:a.allocatedKwh};
   return Scaffold(appBar:AppBar(title:const Text('Shared Energy')),
    body:ListView(padding:const EdgeInsets.all(16),children:[
@@ -51,7 +51,7 @@ class _SharedEnergyScreenState extends State<SharedEnergyScreen> {
      const Divider(),Text('Rooms in ${site.name}',style:Theme.of(context).textTheme.titleLarge),
      TextField(controller:_roomName,decoration:const InputDecoration(labelText:'Room name')),
      OutlinedButton(onPressed:_addRoom,child:const Text('Add room')),
-     ..._rooms.map((r)=>Card(child:ListTile(title:Text(r.name),subtitle:Text('Allocation: ${(byId[r.id]??0).toStringAsFixed(2)} kWh/day'),trailing:Text(_policy.name)))),
+     ..._rooms.map((r)=>Card(child:ListTile(title:Text(r.name),subtitle:Text(_policy==AllocationPolicy.manual ? 'Manual allocation requires admin approval' : 'Allocation: ${(byId[r.id]??0).toStringAsFixed(2)} kWh/day'),trailing:Text(_policy.name)))),
      const Text('Room consumption is not inferred from the site meter. Add certified room meters before classifying any reading as measured.'),
     ]
    ]));
