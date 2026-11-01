@@ -34,6 +34,9 @@ class EnergyProvider extends ChangeNotifier {
   double batteryCapacityWh = AppConfig.defaultBatteryCapacityWh;
   double panelCapacityWp = AppConfig.defaultPanelCapacityWp;
   double criticalBatteryPercent = AppConfig.criticalBatteryPercent;
+  double reservePercent = 10;
+  double siteLatitude = 6.5244;
+  double siteLongitude = 3.3792;
   double lowBatteryPercent = AppConfig.lowBatteryPercent;
   bool hasCompletedOnboarding = false;
 
@@ -75,6 +78,8 @@ class EnergyProvider extends ChangeNotifier {
     batteryPercent: batteryPercent,
     batteryCapacityWh: batteryCapacityWh,
     currentLoadW: currentLoadW,
+    reservePercent: reservePercent,
+    efficiency: AppConfig.systemEfficiency,
   );
 
   double get usableEnergyWh => batteryCapacityWh * (batteryPercent / 100);
@@ -154,6 +159,9 @@ class EnergyProvider extends ChangeNotifier {
     criticalBatteryPercent =
         prefs.getDouble('criticalBatteryPercent') ??
         AppConfig.criticalBatteryPercent;
+    reservePercent = prefs.getDouble('reservePercent') ?? 10;
+    siteLatitude = prefs.getDouble('siteLatitude') ?? 6.5244;
+    siteLongitude = prefs.getDouble('siteLongitude') ?? 3.3792;
     lowBatteryPercent =
         prefs.getDouble('lowBatteryPercent') ?? AppConfig.lowBatteryPercent;
     hasCompletedOnboarding = prefs.getBool('hasCompletedOnboarding') ?? false;
@@ -177,8 +185,10 @@ class EnergyProvider extends ChangeNotifier {
       } catch (_) {}
     }
 
+    forecast = StorageService.loadForecast();
+    lastSolarFetch = StorageService.forecastFetchedAt() ?? DateTime.fromMillisecondsSinceEpoch(0);
     await _switchSource(_sourceType, restart: false);
-    unawaited(refreshForecast(lat: 6.5244, lon: 3.3792));
+    unawaited(refreshForecast(lat: siteLatitude, lon: siteLongitude));
   }
 
   Future<void> _switchSource(DataSourceType type, {bool restart = true}) async {
@@ -271,11 +281,35 @@ class EnergyProvider extends ChangeNotifier {
       offline = false;
       forecast = await _solar.fetchForecast(lat: lat, lon: lon);
       lastSolarFetch = DateTime.now();
+      await StorageService.saveForecast(forecast, fetchedAt: lastSolarFetch);
       lastError = null;
     } catch (e) {
       offline = true;
       lastError = e.toString();
+      // Keep the last successful forecast in memory; if none is loaded, restore disk cache.
+      if (forecast.isEmpty) forecast = StorageService.loadForecast();
+      lastSolarFetch = StorageService.forecastFetchedAt() ?? lastSolarFetch;
     }
+    notifyListeners();
+  }
+
+  Future<void> setSiteLocation({required double latitude, required double longitude}) async {
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+      throw ArgumentError('Latitude or longitude is outside valid bounds.');
+    }
+    siteLatitude = latitude;
+    siteLongitude = longitude;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('siteLatitude', latitude);
+    await prefs.setDouble('siteLongitude', longitude);
+    await refreshForecast(lat: latitude, lon: longitude);
+  }
+
+  Future<void> setReservePercent(double value) async {
+    if (value < 0 || value >= 100) throw ArgumentError('Reserve must be from 0 to below 100%.');
+    reservePercent = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('reservePercent', value);
     notifyListeners();
   }
 
