@@ -32,6 +32,14 @@ void main() {
     expect(result.single.roomId,'a');
   });
 
+  test('priority allocation weights rooms proportionally', () {
+    final rooms=[EnergyRoom(id:'a',siteId:'s',name:'A',priority:1),EnergyRoom(id:'b',siteId:'s',name:'B',priority:3)];
+    final priority=EnergySite(id:'s',name:'Demo',type:'hostel',timezone:'UTC',dailyBudgetKwh:12,allocationPolicy:AllocationPolicy.priority);
+    final result=service.allocate(priority,rooms);
+    expect(result[0].allocatedKwh,closeTo(3,0.0001));
+    expect(result[1].allocatedKwh,closeTo(9,0.0001));
+  });
+
   test('manual allocation is not silently guessed', () {
     final rooms=[EnergyRoom(id:'a',siteId:'s',name:'A')];
     final manual=EnergySite(id:'s',name:'Demo',type:'hostel',timezone:'UTC',dailyBudgetKwh:12,allocationPolicy:AllocationPolicy.manual);
