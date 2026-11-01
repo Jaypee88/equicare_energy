@@ -22,3 +22,29 @@ void main() {
     expect(h, double.infinity);
   });
 }
+
+  test('reserve and efficiency reduce available autonomy', () {
+    final h = EnergyCalculator.estimateRuntimeHours(
+      batteryPercent: 80, batteryCapacityWh: 2000, currentLoadW: 400,
+      reservePercent: 10, efficiency: 0.8,
+    );
+    expect(h, closeTo(2.8, 0.001));
+  });
+
+  test('autonomy compares approved flexible load scenario', () {
+    final result = EnergyCalculator.estimateAutonomy(
+      batteryPercent: 80, batteryCapacityWh: 2000, currentLoadW: 500,
+      flexibleLoadReductionW: 200, reservePercent: 10, efficiency: 1,
+    );
+    expect(result.currentHours, closeTo(2.8, 0.001));
+    expect(result.reducedLoadHours, closeTo(4.6667, 0.001));
+    expect(result.extensionHours, closeTo(1.8667, 0.001));
+  });
+
+  test('Jain fairness index is one for equal ratios', () {
+    expect(EnergyCalculator.jainsFairnessIndex([1, 1, 1, 1]), closeTo(1, 0.0001));
+  });
+
+  test('Jain fairness index penalizes unequal ratios', () {
+    expect(EnergyCalculator.jainsFairnessIndex([1, 1, 1, 4]), lessThan(1));
+  });
