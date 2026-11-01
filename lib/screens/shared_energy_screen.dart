@@ -26,7 +26,10 @@ class _SharedEnergyScreenState extends State<SharedEnergyScreen> {
   if(_siteName.text.trim().isEmpty||budget==null||budget<=0){setState(()=>_message='Enter a site name and positive daily budget.');return;}
   final s=EnergySite(id:_id(),name:_siteName.text.trim(),type:'shared_residence',timezone:DateTime.now().timeZoneName,dailyBudgetKwh:budget,allocationPolicy:_policy);
   await _service.saveSite(s);await _service.audit(AllocationAudit(id:_id(),siteId:s.id,actor:'local-admin',action:'site-created',details:'Created ${s.name}',at:DateTime.now()));
-  await _load();await _select(s);setState(()=>_message='Site saved locally.');
+  await _load();
+  final saved=_sites.firstWhere((item)=>item.id==s.id);
+  await _select(saved);
+  setState(()=>_message='Site saved locally.');
  }
  Future<void> _addRoom() async {
   final s=_selected;if(s==null||_roomName.text.trim().isEmpty)return;
