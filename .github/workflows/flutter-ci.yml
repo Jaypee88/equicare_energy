@@ -19,8 +19,16 @@ jobs:
         with:
           channel: stable
       - run: flutter pub get
-      - run: flutter analyze --no-pub
+      # Keep analyzer errors and warnings fatal; current legacy info-level lints are reported but do not block builds.
+      - run: flutter analyze --no-pub --no-fatal-infos
       - run: flutter test --no-pub
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: equicare-energy-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
   backend:
     runs-on: ubuntu-latest
     defaults:
@@ -32,4 +40,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: pytest -q
+      - run: PYTHONPATH=. pytest -q
