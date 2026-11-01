@@ -7,6 +7,8 @@ EquiCare Energy is a Flutter-based energy monitoring and resilience prototype fo
 - Battery, load and solar monitoring through a simulator or an ESP32-compatible HTTP status endpoint.
 - Battery runtime estimates with configurable reserve and system efficiency.
 - Solar forecast retrieval from Open-Meteo, with a locally persisted forecast cache for offline viewing.
+- Local Shared Energy site and room management with equal, weighted and priority allocation previews; manual allocation is reserved for explicit approval.
+- Local allocation audit events and source-labelled room consumption records; measured readings require a meter ID.
 - Shared Energy allocation demonstration with adjustable room weights and an illustrative fairness indicator.
 - Critical Services autonomy scenario comparing current demand with a proposed flexible-load reduction.
 - Alerts, history, model diagnostics and simulator controls.
