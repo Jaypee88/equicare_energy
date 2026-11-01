@@ -90,7 +90,7 @@ class _EquityModesScreenState extends State<EquityModesScreen> {
   Widget _slider(String label, double value, double min, double max, ValueChanged<double> changed, {String suffix = ''}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('$label: ${value.toStringAsFixed(0)}$suffix'),
-      Slider(value: value.clamp(min, max), min: min, max: max, onChanged: changed),
+      Slider(value: value.clamp(min, max).toDouble(), min: min, max: max, onChanged: changed),
     ]);
   }
 }
