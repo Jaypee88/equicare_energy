@@ -4,6 +4,7 @@ import 'core/theme.dart';
 import 'core/theme_controller.dart';
 import 'providers/energy_provider.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/equity_modes_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/model_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -31,6 +32,7 @@ class EquiCareApp extends StatelessWidget {
         '/settings': (_) => const SettingsScreen(),
         '/model': (_) => const ModelScreen(),
         '/history': (_) => const HistoryScreen(),
+        '/equity': (_) => const EquityModesScreen(),
       },
     );
   }
