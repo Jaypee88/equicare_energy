@@ -4,7 +4,10 @@ import '../models/site_models.dart';
 
 class SharedEnergyService {
   static const _boxName='shared_energy';
-  static Future<Box> _box() async => Hive.isBoxOpen(_boxName) ? Hive.box(_boxName) : Hive.openBox(_boxName);
+  static Future<Box> _box() async {
+    if (Hive.isBoxOpen(_boxName)) return Hive.box(_boxName);
+    return Hive.openBox(_boxName);
+  }
 
   Future<void> saveSite(EnergySite site) async => (await _box()).put('site:${site.id}',site.toMap());
   Future<List<EnergySite>> sites() async {
