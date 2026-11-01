@@ -36,15 +36,20 @@ subprojects {
     }
 }
 
-// tflite_flutter sets Java 11 in its Android compileOptions. Re-apply Java 17
-// after that subproject has completed evaluation.
-gradle.afterProject { evaluatedProject, _ ->
-    if (evaluatedProject.name == "tflite_flutter") {
-        evaluatedProject.tasks
-            .withType<org.gradle.api.tasks.compile.JavaCompile>()
-            .configureEach {
-                sourceCompatibility = JavaVersion.VERSION_17.toString()
-                targetCompatibility = JavaVersion.VERSION_17.toString()
+// tflite_flutter sets Java 11 in its Android compileOptions. Override the
+// JavaCompile tasks once that subproject has completed evaluation.
+gradle.addProjectEvaluationListener(object : org.gradle.api.ProjectEvaluationListener {
+    override fun beforeEvaluate(project: org.gradle.api.Project) = Unit
+
+    override fun afterEvaluate(
+        project: org.gradle.api.Project,
+        state: org.gradle.api.ProjectState
+    ) {
+        if (project.name == "tflite_flutter") {
+            project.tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().forEach { task ->
+                task.sourceCompatibility = JavaVersion.VERSION_17.toString()
+                task.targetCompatibility = JavaVersion.VERSION_17.toString()
             }
+        }
     }
-}
+})
