@@ -27,14 +27,8 @@ class SharedEnergyService {
         if(total<=0) throw ArgumentError('At least one positive allocation weight is required.');
         return rooms.map((r)=>RoomAllocation(r.id,site.dailyBudgetKwh*r.allocationWeight/total)).toList();
       case AllocationPolicy.priority:
-        final ordered=[...rooms]..sort((a,b)=>b.priority.compareTo(a.priority));
-        final result=<RoomAllocation>[];
-        var remaining=site.dailyBudgetKwh;
-        for(var i=0;i<ordered.length;i++){
-          final share=remaining/(ordered.length-i);
-          result.add(RoomAllocation(ordered[i].id,share)); remaining-=share;
-        }
-        return result;
+        final totalPriority=rooms.fold<int>(0,(sum,r)=>sum+(r.priority>0?r.priority:1));
+        return rooms.map((r)=>RoomAllocation(r.id,site.dailyBudgetKwh*(r.priority>0?r.priority:1)/totalPriority)).toList();
       case AllocationPolicy.manual:
         throw StateError('Manual allocations must be explicitly entered and approved.');
     }
