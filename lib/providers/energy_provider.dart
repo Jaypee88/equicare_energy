@@ -279,7 +279,7 @@ class EnergyProvider extends ChangeNotifier {
   }) async {
     try {
       offline = false;
-      forecast = await _solar.fetchForecast(lat: lat, lon: lon);
+      forecast = await _solar.fetchForecast(lat: lat, lon: lon, panelCapacityWp: panelCapacityWp);
       lastSolarFetch = DateTime.now();
       await StorageService.saveForecast(forecast, fetchedAt: lastSolarFetch);
       lastError = null;
