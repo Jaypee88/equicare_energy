@@ -117,6 +117,8 @@ class DashboardScreen extends StatelessWidget {
         title: const Text('EquiCare Energy'),
         actions: [
           IconButton(icon: const Icon(Icons.balance_outlined), tooltip: 'Energy equity & resilience', onPressed: () => Navigator.pushNamed(context, '/equity')),
+          IconButton(icon: const Icon(Icons.notifications_outlined), tooltip: 'Alerts', onPressed: () => Navigator.pushNamed(context, '/alerts')),
+          IconButton(icon: const Icon(Icons.wb_sunny_outlined), tooltip: 'Solar forecast', onPressed: () => Navigator.pushNamed(context, '/forecast')),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () => Navigator.pushNamed(context, '/history'),
