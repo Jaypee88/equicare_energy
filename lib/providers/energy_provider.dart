@@ -341,12 +341,17 @@ class EnergyProvider extends ChangeNotifier {
       final result = trainer.fit(samples);
 
       if (result != null) {
-        _predictor.applyWeights(result.weights, sampleCount: result.samples);
-        await StorageService.saveModelJson(jsonEncode(_predictor.toJson()));
+        // Never replace the active model when it loses to the simple baseline.
+        // The current trainer reports an in-sample comparison; a chronological
+        // holdout should be added before treating this as production validation.
         lastTraining = result;
         mlMAE = result.trainMAE;
         baselineMAE = result.baselineMAE;
         sampleCount = result.samples;
+        if (result.trainMAE < result.baselineMAE) {
+          _predictor.applyWeights(result.weights, sampleCount: result.samples);
+          await StorageService.saveModelJson(jsonEncode(_predictor.toJson()));
+        }
       }
       return result;
     } finally {
